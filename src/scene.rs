@@ -54,7 +54,7 @@ pub fn scene(shader: &mut Shader) {
     //
     let light1 = Light {
         position: (1.0, 5.0, 0.0),
-        ambient: (1., 1., 1.),
+        ambient: (0.1, 0.1, 0.1),
         diffuse: (1., 1., 1.),
         specular: (1., 1., 1.),
     };

@@ -280,7 +280,7 @@ vec3 scene_lighting(vec3 point, vec3 normal, Material material) {
 		bool shadow_hit = false;
 		float feeler_dist = ray_march(point + normal * MIN_DIST * 2., light_direction, _m, shadow_hit);
 		
-		if (feeler_dist > light_dist) {
+		if (!shadow_hit) {
 			// rest of blinn-phong
 			hallcolor += light.diffuse * material.diffuse * dot(normal, light_direction);
 			

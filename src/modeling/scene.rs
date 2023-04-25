@@ -4,7 +4,9 @@ use super::{object::Object, flatten::Flatten, lighting::Light};
 
 pub struct Scene {
     scene_buffer: Vec<f32>,
+    num_objs: i32,
     lights_buffer: Vec<f32>,
+    num_lights: i32,
     camera_pos: (f32, f32, f32)
 }
 
@@ -13,7 +15,9 @@ impl Scene {
         Self {
             scene_buffer: Vec::new(),
             lights_buffer: Vec::new(),
-            camera_pos: (0., 0., 0.)
+            camera_pos: (0., 0., 0.),
+            num_objs: 0,
+            num_lights: 0,
         }
     }
 
@@ -21,18 +25,20 @@ impl Scene {
     where M: Flatten
     {
         obj.add_to_buffer(&mut self.scene_buffer);
+        self.num_objs += 1;
     }
 
     pub fn add_light(&mut self, light: Light) {
         light.add_to_buffer(&mut self.lights_buffer);
+        self.num_lights += 1;
     }
 
     pub fn set_in_shader(self, shader: &mut Shader) {
         shader.set_uniform_array_float("iScene", &self.scene_buffer);
-        shader.set_uniform_int("iNumObjs", self.scene_buffer.len() as i32);
+        shader.set_uniform_int("iNumObjs", self.num_objs);
 
         shader.set_uniform_array_float("iLights", &self.lights_buffer);
-        shader.set_uniform_int("iNumLights", self.lights_buffer.len() as i32);
+        shader.set_uniform_int("iNumLights", self.num_lights);
 
         shader.set_uniform_vec3("iCameraPos", self.camera_pos.into());
     }

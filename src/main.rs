@@ -33,7 +33,7 @@ fn main() {
         Style::CLOSE,
         &Default::default()
     );
-    window.set_framerate_limit(60);
+    window.set_framerate_limit(5);
 
     // Create the drawing surface
     let mut screen = RectangleShape::new();
