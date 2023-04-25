@@ -15,7 +15,7 @@ The `material` is just composed of Blinn-Phong attributes. I also added a `refle
 - Soft shadows are automatic and do not reflect the actual properties of the light.
 
 # Credits
+- Ray marching explanation and motivation for this project: https://www.youtube.com/watch?v=svLzmFuSBhk
 - Distance estimation for primitives and operations: https://iquilezles.org/articles/distfunctions/
   - Included ShaderToy demos
 - Past assignments in this class for doing Blinn-Phong correctly and working with shaders
-- video (cite)
