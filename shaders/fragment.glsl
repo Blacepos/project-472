@@ -1,11 +1,13 @@
 #version 330
 
-#define MAX_MARCHES 100
+#define MAX_MARCHES 300
 #define MAX_DIST 100.0
 #define MIN_DIST 0.005
+#define SHADOW_DELTA 0.08
+#define SOFT_SHADOWS 0
 
 uniform ivec2 iResolution;
-float iTime = 0.0;
+uniform float iTime;
 uniform vec3 iCameraPos;
 float cameraZoom = 0.7;
 
@@ -139,6 +141,13 @@ float op_smooth_union(float dist1, float dist2, float k) {
     return min(dist1, dist2) - h*h*0.25/k;
 }
 
+#define SMOOTH_INTERSECTION_ID 202
+#define SMOOTH_INTERSECTION_SIZE 2
+float op_smooth_intersection(float dist1, float dist2, float k) {
+	// float h = clamp(0.5 - 0.5*(dist2 - dist1)/k, 0.0, 1.0);
+    // return mix(dist2, dist1, h) + k*h*(1.0 - h);
+	return -op_smooth_union(-dist1, -dist2, k);
+}
 
 //
 // Material
@@ -203,30 +212,36 @@ float scene_distance(vec3 point, out Material material) {
 		// get object distance
 		int obj_id = id_to_int(iScene[i]);
 		switch (obj_id) {
-			case 0:
+			case SPHERE_ID:
 				float s_dist = unary_operand(point, i);
 				dist = min(dist, s_dist);
 				break;
-			case 1:
+			case RECT_PRISM_ID:
 				float r_dist = unary_operand(point, i);
 				dist = min(dist, r_dist);
 				break;
-			case 100:
+			case ROUNDING_ID:
 				float radius = iScene[i+1];
 				i += ROUNDING_SIZE;
 				float prim_dist = unary_operand(point, i);
 				dist = min(dist, op_rounding(prim_dist, radius));
 				break;
-			case 200:
+			case INTERSECTION_ID:
 				i += INTERSECTION_SIZE;
 				vec2 prim_dists = binary_operands(point, i);
 				dist = min(dist, op_intersection(prim_dists.x, prim_dists.y));
 				break;
-			case 201:
+			case SMOOTH_UNION_ID:
 				float k = iScene[i+1];
 				i += SMOOTH_UNION_SIZE;
 				vec2 prim_dists2 = binary_operands(point, i);
 				dist = min(dist, op_smooth_union(prim_dists2.x, prim_dists2.y, k));
+				break;
+			case SMOOTH_INTERSECTION_ID:
+				float k2 = iScene[i+1];
+				i += SMOOTH_INTERSECTION_SIZE;
+				vec2 prim_dists3 = binary_operands(point, i);
+				dist = min(dist, op_smooth_intersection(prim_dists3.x, prim_dists3.y, k2));
 				break;
 		}
 		if (dist < min_dist) {
@@ -238,16 +253,19 @@ float scene_distance(vec3 point, out Material material) {
 	return dist;
 }
 
-float ray_march(vec3 origin, vec3 direction, out Material material, out bool hit) {
+float ray_march(vec3 origin, vec3 direction, out Material material, out bool hit, inout float min_scene_dist) {
 	float curr_dist = 0.0; // current distance from the origin of the ray
-	hit = false;
 	int i;
 	float scene_dist;
+	hit = false;
+	min_scene_dist = MAX_DIST;
 
 	for (i = 0; i < MAX_MARCHES; i++) {
 		vec3 curr_pos = origin + direction*curr_dist; // start at origin and march a certain distance in the direction of the ray
 		scene_dist = scene_distance(curr_pos, material);
 		curr_dist += scene_dist; // march the ray the same distance it is from the scene
+
+		min_scene_dist = min(min_scene_dist, SHADOW_DELTA*scene_dist/curr_dist);
 
 		if (curr_dist > MAX_DIST)
 			break;
@@ -278,17 +296,22 @@ vec3 scene_lighting(vec3 point, vec3 normal, Material material) {
 		// shadow feeler
 		Material _m;
 		bool shadow_hit = false;
-		float feeler_dist = ray_march(point + normal * MIN_DIST * 2., light_direction, _m, shadow_hit);
+		float min_scene_dist;
+		float feeler_dist = ray_march(point + normal * MIN_DIST * 2., light_direction, _m, shadow_hit, min_scene_dist);
 		
-		if (!shadow_hit) {
-			// rest of blinn-phong
-			hallcolor += light.diffuse * material.diffuse * dot(normal, light_direction);
-			
-			vec3 view_direction = normalize(iCameraPos - point);
-			vec3 h = normalize(light_direction + view_direction);
-			float sif = pow(dot(normal, h), material.shininess);
-			hallcolor += light.specular * material.specular * sif;
-		}
+		vec3 spec_and_diff = vec3(0.);
+		// rest of blinn-phong
+		spec_and_diff += light.diffuse * material.diffuse * dot(normal, light_direction);
+		
+		vec3 view_direction = normalize(iCameraPos - point);
+		vec3 h = normalize(light_direction + view_direction);
+		float sif = pow(dot(normal, h), material.shininess);
+		spec_and_diff += light.specular * material.specular * sif;
+#if SOFT_SHADOWS
+		hallcolor += spec_and_diff * clamp(min_scene_dist * feeler_dist, 0., 1.);
+#else
+		hallcolor += spec_and_diff * int(!shadow_hit);
+#endif
 	}
 	return hallcolor;
 }
@@ -317,7 +340,8 @@ void main(void)
 
 	Material material;
 	bool hit;
-	float dist = ray_march(rayOrigin, rayDirection, material, hit);
+	float _msd;
+	float dist = ray_march(rayOrigin, rayDirection, material, hit, _msd);
 
 	vec3 point = rayOrigin + rayDirection*dist; // get the point on the surface that we ray marched to
 	vec3 normal = getNormal(point);

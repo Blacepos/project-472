@@ -2,6 +2,7 @@ use super::{flatten::Flatten, primitive::Primitive};
 
 const INTERSECTION_ID: f32 = 200.;
 const SMOOTH_UNION_ID: f32 = 201.;
+const SMOOTH_INTERSECTION_ID: f32 = 202.;
 
 pub enum Binary {
     Intersection {
@@ -9,6 +10,11 @@ pub enum Binary {
         model2: Primitive
     },
     SmoothUnion {
+        k: f32,
+        model1: Primitive,
+        model2: Primitive
+    },
+    SmoothIntersection {
         k: f32,
         model1: Primitive,
         model2: Primitive
@@ -29,6 +35,14 @@ impl Flatten for Binary {
             SmoothUnion { k, model1, model2 } => {
                 let mut buf = Vec::new();
                 buf.push(SMOOTH_UNION_ID);
+                buf.push(k);
+                buf.extend(model1.flatten());
+                buf.extend(model2.flatten());
+                buf
+            },
+            SmoothIntersection { k, model1, model2 } => {
+                let mut buf = Vec::new();
+                buf.push(SMOOTH_INTERSECTION_ID);
                 buf.push(k);
                 buf.extend(model1.flatten());
                 buf.extend(model2.flatten());

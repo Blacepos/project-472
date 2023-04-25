@@ -3,7 +3,7 @@
 
 I decided to forgo all performance optimizations for the sake of my own sanity. This mostly amounts to me doing a lot of copying into structs in the fragment shader instead of reading the big scene buffer directly.
 
-Material blending is not supported for models combined using a binary operation.
+Material blending is not supported for models combined using a binary operation. This is reflected in the modeling API described below.
 
 # Modeling
 
@@ -12,7 +12,11 @@ The `material` is just composed of Blinn-Phong attributes. I also added a `refle
 
 # Rendering
 
-- Soft shadows are automatic and do not reflect the actual properties of the light.
+## Soft shadows
+Can be approximated easily by tracking the scene distance when shooting the shadow feeler. Instead of shooting a bunch of rays at slightly different angles, you keep track of the minimum scene distance while going towards the light. The shadows do not reflect the actual properties of the light and are only there for effect.
+
+## Model operations
+Since the scene is described using distances, it's possible to modify 
 
 # Credits
 - Ray marching explanation and motivation for this project: https://www.youtube.com/watch?v=svLzmFuSBhk

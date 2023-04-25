@@ -1,10 +1,18 @@
+use std::time::Duration;
+
 use sfml::graphics::Shader;
 
 use crate::modeling::{material::Material, object::Object, binary::Binary, primitive::Primitive, lighting::Light, scene::Scene, unary::Unary};
 
 
-pub fn scene(shader: &mut Shader) {
+pub fn scene(shader: &mut Shader, elapsed_time: Duration) {
+    let t = elapsed_time.as_secs_f32();
     let mut scene = Scene::new();
+
+    //
+    // Project embedding requirement
+    //
+
 
     //
     // Materials
@@ -12,7 +20,7 @@ pub fn scene(shader: &mut Shader) {
     let cyan_matte = Material::default()
         .with_diffuse((0., 0.4, 0.8))
         .with_ambient((0.2, 0.2, 0.2))
-        .with_white_specular(0.8)
+        .with_white_specular(0.7)
         .with_shininess(100.);
 
     //
@@ -21,11 +29,11 @@ pub fn scene(shader: &mut Shader) {
     let conjoined_sphere_rect = Object {
         model: Binary::SmoothUnion {
             model1: Primitive::Sphere {
-                center: (1., 2., 6.),
+                center: (1.*t.sin(), 1.*t.cos()+2., 6.),
                 radius: 1.
             },
             model2: Primitive::RectPrism {
-                center: (-1., 2., 6.),
+                center: (-1.*t.sin(), 2., 6.),
                 extents: (1., 1., 1.)
             },
             k: 0.6
@@ -61,7 +69,7 @@ pub fn scene(shader: &mut Shader) {
     scene.add_light(light1);
 
     let light2 = Light {
-        position: (-1., 4., 12.0),
+        position: (-1., 2.5, 12.0),
         ambient: (0.5, 0.5, 0.3),
         diffuse: (0.5, 0.5, 0.3),
         specular: (0.5, 0.5, 0.3),
