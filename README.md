@@ -16,10 +16,9 @@ The `material` is just composed of Blinn-Phong attributes. I also added a `refle
 Can be approximated easily by tracking the scene distance when shooting the shadow feeler. Instead of shooting a bunch of rays at slightly different angles, you keep track of the minimum scene distance while going towards the light. The shadows do not reflect the actual properties of the light and are only there for effect.
 
 ## Model operations
-Since the scene is described using distances, it's possible to modify 
+Since the scene is described using distances, it's not too difficult to significantly modify the way objects appear. For example, you can just subtract a radius from the distance and the object will appear rounded. A lot of the formulas for these operations can be found [here](https://iquilezles.org/articles/distfunctions/).
 
 # Credits
 - Ray marching explanation and motivation for this project: https://www.youtube.com/watch?v=svLzmFuSBhk
-- Distance estimation for primitives and operations: https://iquilezles.org/articles/distfunctions/
-  - Included ShaderToy demos
-- Past assignments in this class for doing Blinn-Phong correctly and working with shaders
+- Distance functions for primitives and operations: https://iquilezles.org/articles/distfunctions/
+- Past assignments in this class for doing Blinn-Phong correctly and working with shaders.
