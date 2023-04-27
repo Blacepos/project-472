@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{time::Duration, f32::consts::TAU};
 
 use sfml::graphics::Shader;
 
@@ -199,11 +199,15 @@ pub fn scene(shader: &mut Shader, elapsed_time: Duration) {
     };
     scene.add_light(light1);
 
+    let l2_int_r = 1.+0.5*(3.*t).cos();
+    let l2_int_g = 1.+0.5*(3.*t+TAU/3.).cos();
+    let l2_int_b = 1.+0.5*(3.*t+2.*TAU/3.).cos();
+
     let light2 = Light {
         position: (-1., 2.5, 12.0),
-        ambient: (0.5, 0.5, 0.3),
-        diffuse: (0.5, 0.5, 0.3),
-        specular: (0.5, 0.5, 0.3),
+        ambient: (0.5*l2_int_r, 0.5*l2_int_g, 0.3*l2_int_b),
+        diffuse: (0.5*l2_int_r, 0.5*l2_int_g, 0.3*l2_int_b),
+        specular: (0.5*l2_int_r, 0.5*l2_int_g, 0.3*l2_int_b),
     };
     scene.add_light(light2);
 
