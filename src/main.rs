@@ -66,7 +66,7 @@ fn main() {
         let elapsed_time = Instant::now() - start_time;
         scene(&mut shaders, elapsed_time);
         shaders.set_uniform_ivec2("iResolution", (WIN_SIZE.0 as i32, WIN_SIZE.1 as i32).into());
-        shaders.set_uniform_float("iTime", elapsed_time.as_secs_f32());
+        // shaders.set_uniform_float("iTime", elapsed_time.as_secs_f32());
         render_states.set_shader(Some(&shaders));
         
         window.draw_with_renderstates(&screen, &render_states);

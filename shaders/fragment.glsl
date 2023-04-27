@@ -7,7 +7,6 @@
 #define SOFT_SHADOWS 0
 
 uniform ivec2 iResolution;
-uniform float iTime;
 uniform vec3 iCameraPos;
 float cameraZoom = 0.7;
 
