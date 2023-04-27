@@ -15,8 +15,8 @@ pub fn scene(shader: &mut Shader, elapsed_time: Duration) {
     let cyan_matte = Material::default()
         .with_diffuse((0., 0.4, 0.8))
         .with_ambient((0.2, 0.2, 0.2))
-        .with_white_specular(0.7)
-        .with_shininess(100.);
+        .with_white_specular(0.7+0.7*(t*2.3).cos())
+        .with_shininess(100.+100.*(t*2.3).cos());
 
     let msu_green = Material::default()
         .with_diffuse((0.094, 0.271, 0.231))
