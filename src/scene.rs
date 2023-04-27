@@ -10,11 +10,6 @@ pub fn scene(shader: &mut Shader, elapsed_time: Duration) {
     let mut scene = Scene::new();
 
     //
-    // Project embedding requirement
-    //
-
-
-    //
     // Materials
     //
     let cyan_matte = Material::default()
@@ -23,8 +18,144 @@ pub fn scene(shader: &mut Shader, elapsed_time: Duration) {
         .with_white_specular(0.7)
         .with_shininess(100.);
 
+    let msu_green = Material::default()
+        .with_diffuse((0.094, 0.271, 0.231))
+        .with_ambient((0.2, 0.2, 0.2))
+        .with_white_specular(0.7)
+        .with_shininess(20.);
+
     //
-    // Objects
+    // Project embedding requirement
+    //
+    let scale = 1.;
+    let depth = 6.+3.*(-t/2.).sin();
+    let ox = -2.5;
+    let oy = 1.+3.*(t/2.).cos();
+    let smoothing = 0.2+0.2*(2.*t).sin();
+    let four_1 = Object {
+        model: Binary::SmoothUnion {
+            model1: Primitive::Capsule {
+                point1: (ox+0.*scale,oy+2.*scale,depth),
+                point2: (ox+0.*scale,oy+1.*scale,depth),
+                radius: 0.1*scale,
+            },
+            model2: Primitive::Capsule {
+                point1: (ox+0.*scale,oy+1.*scale,depth),
+                point2: (ox+1.*scale,oy+1.*scale,depth),
+                radius: 0.1*scale,
+            },
+            k: smoothing,
+        },
+        material: msu_green,
+    };
+    let four_2 = Object {
+        model: Binary::SmoothUnion {
+            model1: Primitive::Capsule {
+                point1: (ox+0.*scale,oy+1.*scale,depth),
+                point2: (ox+1.*scale,oy+1.*scale,depth),
+                radius: 0.1*scale,
+            },
+            model2: Primitive::Capsule {
+                point1: (ox+1.*scale,oy+2.*scale,depth),
+                point2: (ox+1.*scale,oy+0.*scale,depth),
+                radius: 0.1*scale,
+            },
+            k: smoothing,
+        },
+        material: msu_green,
+    };
+    scene.add_object(four_1);
+    scene.add_object(four_2);
+
+    let seven = Object {
+        model: Binary::SmoothUnion {
+            model1: Primitive::Capsule {
+                point1: (ox+2.*scale,oy+2.*scale,depth),
+                point2: (ox+3.*scale,oy+2.*scale,depth),
+                radius: 0.1*scale,
+            },
+            model2: Primitive::Capsule {
+                point1: (ox+3.*scale,oy+2.*scale,depth),
+                point2: (ox+2.*scale,oy+0.*scale,depth),
+                radius: 0.1*scale,
+            },
+            k: smoothing,
+        },
+        material: msu_green,
+    };
+    scene.add_object(seven);
+
+    let two_1 = Object {
+        model: Binary::SmoothUnion {
+            model1: Primitive::Capsule {
+                point1: (ox+4.*scale,oy+2.*scale,depth),
+                point2: (ox+5.*scale,oy+2.*scale,depth),
+                radius: 0.1*scale,
+            },
+            model2: Primitive::Capsule {
+                point1: (ox+5.*scale,oy+2.*scale,depth),
+                point2: (ox+5.*scale,oy+1.*scale,depth),
+                radius: 0.1*scale,
+            },
+            k: smoothing,
+        },
+        material: msu_green,
+    };
+    let two_2 = Object {
+        model: Binary::SmoothUnion {
+            model1: Primitive::Capsule {
+                point1: (ox+5.*scale,oy+2.*scale,depth),
+                point2: (ox+5.*scale,oy+1.*scale,depth),
+                radius: 0.1*scale,
+            },
+            model2: Primitive::Capsule {
+                point1: (ox+5.*scale,oy+1.*scale,depth),
+                point2: (ox+4.*scale,oy+1.*scale,depth),
+                radius: 0.1*scale,
+            },
+            k: smoothing,
+        },
+        material: msu_green,
+    };
+    let two_3 = Object {
+        model: Binary::SmoothUnion {
+            model1: Primitive::Capsule {
+                point1: (ox+5.*scale,oy+1.*scale,depth),
+                point2: (ox+4.*scale,oy+1.*scale,depth),
+                radius: 0.1*scale,
+            },
+            model2: Primitive::Capsule {
+                point1: (ox+4.*scale,oy+1.*scale,depth),
+                point2: (ox+4.*scale,oy+0.*scale,depth),
+                radius: 0.1*scale,
+            },
+            k: smoothing,
+        },
+        material: msu_green,
+    };
+    let two_4 = Object {
+        model: Binary::SmoothUnion {
+            model1: Primitive::Capsule {
+                point1: (ox+4.*scale,oy+1.*scale,depth),
+                point2: (ox+4.*scale,oy+0.*scale,depth),
+                radius: 0.1*scale,
+            },
+            model2: Primitive::Capsule {
+                point1: (ox+4.*scale,oy+0.*scale,depth),
+                point2: (ox+5.*scale,oy+0.*scale,depth),
+                radius: 0.1*scale,
+            },
+            k: smoothing,
+        },
+        material: msu_green,
+    };
+    scene.add_object(two_1);
+    scene.add_object(two_2);
+    scene.add_object(two_3);
+    scene.add_object(two_4);
+
+    //
+    // Other Objects
     //      
     let conjoined_sphere_rect = Object {
         model: Binary::SmoothUnion {

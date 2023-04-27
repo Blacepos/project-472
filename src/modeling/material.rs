@@ -2,6 +2,7 @@ use super::flatten::Flatten;
 
 const SHINY: f32 = 100.;
 
+#[derive(Debug, Clone, Copy)]
 pub struct Material {
     pub ambient: (f32, f32, f32),
     pub diffuse: (f32, f32, f32),

@@ -53,7 +53,7 @@ Light read_light(int i) {
 //
 // Scene
 //
-#define SCENE_BUFFER_SIZE 256
+#define SCENE_BUFFER_SIZE 384
 uniform float iScene[SCENE_BUFFER_SIZE];
 uniform int iNumObjs;
 
@@ -113,6 +113,71 @@ RectPrism read_rect_prism(int i) {
 float dist_rect_prism(vec3 point, RectPrism r) {
 	point -= r.center;
 	return length(max(abs(point)-r.extents, 0.0));
+}
+
+// Cylinder
+#define CYLINDER_ID 2
+#define CYLINDER_SIZE 8
+struct Cylinder {
+	vec3 point1;
+	vec3 point2;
+	float radius;
+};
+Cylinder read_cylinder(int i) {
+	return Cylinder(
+		vec3(
+			iScene[i+1],
+			iScene[i+2],
+			iScene[i+3]
+		),
+		vec3(
+			iScene[i+4],
+			iScene[i+5],
+			iScene[i+6]
+		),
+		iScene[i+7]
+	);
+}
+float dist_cylinder(vec3 point, Cylinder c) {
+	vec3  ba = c.point2 - c.point1;
+	vec3  pa = point - c.point1;
+	float baba = dot(ba,ba);
+	float paba = dot(pa,ba);
+	float x = length(pa*baba-ba*paba) - c.radius*baba;
+	float y = abs(paba-baba*0.5)-baba*0.5;
+	float x2 = x*x;
+	float y2 = y*y*baba;
+	float d = (max(x,y)<0.0)?-min(x2,y2):(((x>0.0)?x2:0.0)+((y>0.0)?y2:0.0));
+	return sign(d)*sqrt(abs(d))/baba;
+}
+
+// Capsule
+#define CAPSULE_ID 3
+#define CAPSULE_SIZE 8
+struct Capsule {
+	vec3 point1;
+	vec3 point2;
+	float radius;
+};
+Capsule read_capsule(int i) {
+	return Capsule(
+		vec3(
+			iScene[i+1],
+			iScene[i+2],
+			iScene[i+3]
+		),
+		vec3(
+			iScene[i+4],
+			iScene[i+5],
+			iScene[i+6]
+		),
+		iScene[i+7]
+	);
+}
+float dist_capsule(vec3 point, Capsule c) {
+	vec3 pa = point - c.point1, ba = c.point2 - c.point1;
+	float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+	return length( pa - ba*h ) - c.radius;
 }
 
 
@@ -181,14 +246,22 @@ Material read_material(int i) {
 float unary_operand(vec3 point, inout int i) {
 	int obj_id = id_to_int(iScene[i]);
 	switch (obj_id) {
-		case 0:
+		case SPHERE_ID:
 			Sphere s = read_sphere(i);
 			i += SPHERE_SIZE;
 			return dist_sphere(point, s);
-		case 1:
+		case RECT_PRISM_ID:
 			RectPrism r = read_rect_prism(i);
 			i += RECT_PRISM_SIZE;
 			return dist_rect_prism(point, r);
+		case CYLINDER_ID:
+			Cylinder c = read_cylinder(i);
+			i += CYLINDER_SIZE;
+			return dist_cylinder(point, c);
+		case CAPSULE_ID:
+			Capsule c2 = read_capsule(i);
+			i += CAPSULE_SIZE;
+			return dist_capsule(point, c2);
 		default:
 			return MAX_DIST;
 	}
@@ -219,6 +292,14 @@ float scene_distance(vec3 point, out Material material) {
 			case RECT_PRISM_ID:
 				float r_dist = unary_operand(point, i);
 				dist = min(dist, r_dist);
+				break;
+			case CYLINDER_ID:
+				float c_dist = unary_operand(point, i);
+				dist = min(dist, c_dist);
+				break;
+			case CAPSULE_ID:
+				float c2_dist = unary_operand(point, i);
+				dist = min(dist, c2_dist);
 				break;
 			case ROUNDING_ID:
 				float radius = iScene[i+1];

@@ -35,7 +35,7 @@ fn main() {
     // Create the window
     let mut window = RenderWindow::new(
         WIN_SIZE,
-        "CSE 472 | Final Project | Joshua Austin",
+        "CSE 472 Final Project",
         Style::CLOSE,
         &Default::default()
     );
